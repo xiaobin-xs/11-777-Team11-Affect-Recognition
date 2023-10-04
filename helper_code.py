@@ -1,10 +1,13 @@
 import scipy as sp
 import numpy as np
-import cv2
+import cv2, os
+from tqdm import tqdm
 
 from IPython.display import display, Image
 import matplotlib.pyplot as plt
 
+## the order of the 4 labels
+label_names = ['valence', 'arousal', 'dominance', 'liking'] # 4 labels
 ## the order of the 32 EEG channels
 eeg_channels = ['Fp1', 'AF3', 'F3', 'F7', 'FC5', 'FC1', 'C3', 'T7', 
                 'CP5', 'CP1', 'P3', 'P7', 'PO3', 'O1', 'Oz', 'Pz', 
@@ -12,6 +15,17 @@ eeg_channels = ['Fp1', 'AF3', 'F3', 'F7', 'FC5', 'FC1', 'C3', 'T7',
                 'C4', 'T8', 'CP6', 'CP2', 'P4', 'P8', 'PO4', 'O2'] # 32 channels
 ## the order of the 8 other physiological channels
 other_channels = ['hEOG', 'vEOG', 'zEMG', 'tEMG', 'GSR', 'Resp', 'Pleth', 'Temp'] # 8 channels
+
+def find_participant_ids(data_folder):
+    participant_ids = list()
+    for x in sorted(os.listdir(data_folder)):
+        participant_id = x[1:]
+        participant_data_folder = os.path.join(data_folder, x)
+        if os.path.isdir(participant_data_folder):
+            data_file = os.path.join(participant_data_folder, 's' + participant_id + '.mat')
+            if os.path.isfile(data_file):
+                participant_ids.append(participant_id)
+    return sorted(participant_ids)
 
 
 def extract_frame_per_5sec(cap, display=False):
@@ -32,13 +46,13 @@ def extract_frame_per_5sec(cap, display=False):
         # Extract a frame every 'interval_frames' frames
         if frame_count % interval_frames == 0:
             frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            frame_rgb_list.append(frame_rgb)
+            frame_rgb_list.append(frame_rgb[np.newaxis, :])
             if display:
                 ## Display the extracted frame
                 # plt.imshow(frame_rgb, cmap = plt.cm.Spectral)
                 display(Image(data=cv2.imencode('.jpg', frame)[1].tobytes()))
     
-    return frame_rgb_list
+    return np.vstack(frame_rgb_list)
 
 
 def load_participant_data(data_folder, participant_id, trial_id, task='bi_class'):
@@ -57,7 +71,7 @@ def load_participant_data(data_folder, participant_id, trial_id, task='bi_class'
     ## video
     cap = cv2.VideoCapture('{0}/P{1}/s{1}/s{1}_trial{2}.avi'.format(data_folder, participant_id, trial_id)) # each frame: (576, 720, 3)
     if not cap.isOpened():
-        print("Error: Could not open video file for s{0}_trial{1}.".format(participant_id, trial_id))
+        print("\tError: Could not open video file for s{0}_trial{1}.".format(participant_id, trial_id))
         face_frame_list = None
     else:
         face_frame_list = extract_frame_per_5sec(cap)    
@@ -66,15 +80,15 @@ def load_participant_data(data_folder, participant_id, trial_id, task='bi_class'
     
     mat = sp.io.loadmat( '{0}/P{1}/s{1}.mat'.format(data_folder, participant_id) )
     ## labels
-    labels = mat['labels'][int(trial_id), :] # video/trial x label (valence, arousal, dominance, liking)
+    labels = mat['labels'][int(trial_id)-1, :] # video/trial x label (valence, arousal, dominance, liking)
     if task == 'bi_class':
         labels = np.array([1 if l > 5 else 0 for l in labels])
     ## physiological signals
     physio_data = mat['data'] # video/trial x channel x data (physiological signals)
     # EEG
-    eeg_data = physio_data[int(trial_id), :32, :]
+    eeg_data = physio_data[int(trial_id)-1, :32, :]
     # other physiological signals
-    other_physio_data = physio_data[int(trial_id), 32:, :]
+    other_physio_data = physio_data[int(trial_id)-1, 32:, :]
 
     return {'participant_id': participant_id,
             'trial_id': trial_id,
