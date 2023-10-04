@@ -66,7 +66,11 @@ def load_participant_data(data_folder, participant_id, trial_id, task='bi_class'
                 If label <= 5, then low (0); otherwise, high (1)
     return:
         a dictionary containing the labels, video, eeg, and other physiological signals
-            labels: np.array, 
+            labels: np.array, (4, )
+            video: np.array, (num_frames, 576, 720, 3)
+            eeg_data: np.array, (32, 8064)
+            other_physio_data: np.array, (8, 8064)
+
     '''
     ## video
     cap = cv2.VideoCapture('{0}/P{1}/s{1}/s{1}_trial{2}.avi'.format(data_folder, participant_id, trial_id)) # each frame: (576, 720, 3)
