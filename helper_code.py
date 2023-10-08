@@ -6,6 +6,12 @@ from tqdm import tqdm
 from IPython.display import display, Image
 import matplotlib.pyplot as plt
 
+'''
+To-Do:
+1. parallelize the data loading process for each participant-trial
+2. 
+'''
+
 ## the order of the 4 labels
 label_names = ['valence', 'arousal', 'dominance', 'liking'] # 4 labels
 ## the order of the 32 EEG channels
@@ -55,7 +61,7 @@ def extract_frame_per_5sec(cap, display=False):
     return np.vstack(frame_rgb_list)
 
 
-def load_participant_data(data_folder, participant_id, trial_id, task='bi_class'):
+def load_participant_data(data_folder, participant_id, trial_id, task='bi_class', load_video=True):
     '''
     input:
         data_folder: str, path to the data folder that contains data for all participants
@@ -64,6 +70,7 @@ def load_participant_data(data_folder, participant_id, trial_id, task='bi_class'
         task: str, task type, 'bi_class' or 'regression'; if binary classification, 
                 the labels are binarized to high/versus for each emotion. 
                 If label <= 5, then low (0); otherwise, high (1)
+        load_video: bool, whether to load the video data
     return:
         a dictionary containing the labels, video, eeg, and other physiological signals
             labels: np.array, (4, )
@@ -72,15 +79,18 @@ def load_participant_data(data_folder, participant_id, trial_id, task='bi_class'
             other_physio_data: np.array, (8, 8064)
 
     '''
-    ## video
-    cap = cv2.VideoCapture('{0}/P{1}/s{1}/s{1}_trial{2}.avi'.format(data_folder, participant_id, trial_id)) # each frame: (576, 720, 3)
-    if not cap.isOpened():
-        print("\tError: Could not open video file for s{0}_trial{1}.".format(participant_id, trial_id))
-        face_frame_list = None
+    if load_video:
+        ## video
+        cap = cv2.VideoCapture('{0}/P{1}/s{1}/s{1}_trial{2}.avi'.format(data_folder, participant_id, trial_id)) # each frame: (576, 720, 3)
+        if not cap.isOpened():
+            print("\tError: Could not open video file for s{0}_trial{1}.".format(participant_id, trial_id))
+            face_frame_list = None
+        else:
+            face_frame_list = extract_frame_per_5sec(cap)    
+            # Release the video capture object and close the video file
+            cap.release()
     else:
-        face_frame_list = extract_frame_per_5sec(cap)    
-        # Release the video capture object and close the video file
-        cap.release()
+        face_frame_list = None
     
     mat = sp.io.loadmat( '{0}/P{1}/s{1}.mat'.format(data_folder, participant_id) )
     ## labels
