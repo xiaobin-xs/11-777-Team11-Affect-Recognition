@@ -16,6 +16,7 @@ def load_phyis_data(path,trial):
     return {
         'EEG': eeg_data,
         'other': other_physio_data,
+        'label': mat['labels'],
     }
 
 def mne_plot(eeg_data, save_path):
@@ -52,7 +53,8 @@ def human_class(args):
         data_dict [participant[0]+'_'+participant[1]]= load_phyis_data(os.path.join(args.data_dir,participant[0],'s'+participant[0][1:]), participant[1])
     
     for trial in data_dict:
-        mne_plot(data_dict[trial]['EEG'],trial)
-        phys_plot(data_dict[trial]['other'],trial)
+        # mne_plot(data_dict[trial]['EEG'],trial)
+        # phys_plot(data_dict[trial]['other'],trial)
+        print(data_dict[trial]['label'][int(trial.split('_')[-1])-1,:])
 
     return None

@@ -1,6 +1,8 @@
 AMIGOS/
 DEAP/
 *png
+*avi
+*zip
 __pycache__/
 *.py[cod]
 *$py.class
