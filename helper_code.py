@@ -61,6 +61,70 @@ def extract_frame_per_5sec(cap, display=False):
     return np.vstack(frame_rgb_list)
 
 
+def avgerate_frame_per_seg(cap, seg=4, display_bool=False):
+  # Set the frame rate and interval for frame extraction
+    frame_rate = int(cap.get(cv2.CAP_PROP_FPS))
+    interval_seconds = seg
+    interval_frames = frame_rate * interval_seconds
+
+    frame_rgb_list = []
+    seg_count = 0
+    frame_count = 0
+
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            break
+        
+        # Extract a frame every 'interval_frames' frames
+        if frame_count % interval_frames == 0:
+            seg_count += 1
+            frame_rgb_list.append([])
+        
+        frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        frame_rgb_list[seg_count-1].append(frame_rgb[np.newaxis, :])
+            
+        frame_count += 1
+
+
+    frame_rgb_list = [np.vstack(seg_frame_list).mean(0) for seg_frame_list in frame_rgb_list]
+    frame_rgb_list = [np.rint(seg_frame_list).astype('int') for seg_frame_list in frame_rgb_list]
+    if display_bool:
+        ## Display the extracted frame
+        plt.imshow(frame_rgb_list[0], cmap = plt.cm.Spectral)
+        plt.imshow(frame_rgb_list[60//seg//2-1], cmap = plt.cm.Spectral)
+        plt.imshow(frame_rgb_list[60//seg-1], cmap = plt.cm.Spectral)
+    return frame_rgb_list
+
+
+def segment_video_data(data_folder, participant_ids, data_save_folder='./data', display_bool=False):
+    '''
+    For each of the non-overlapping 4-second facial video segments, average the frames in the segment
+    to get a single frame (i.e. an image of face) for the segment
+    '''
+    for participant_id in tqdm(participant_ids):
+        participant_id = '{:02d}'.format(participant_id)
+        for trial_id in tqdm(range(1, 41)):
+            file_name = 's{0}_trial{1}_mean_frames.npy'.format(participant_id, trial_id)
+            
+            if os.path.exists(os.path.join(data_save_folder, file_name)):
+                continue
+
+            display_bool = display_bool and trial_id==10
+            trial_id = '{:02d}'.format(trial_id)
+            cap = cv2.VideoCapture(os.path.join(data_folder, 'P{0}/s{0}/s{0}_trial{1}.avi'.format(participant_id, trial_id))) # each frame: (576, 720, 3)
+            if not cap.isOpened():
+                print("\tError: Could not open video file for s{0}_trial{1}.".format(participant_id, trial_id))
+                face_frame_list = None
+            else:
+                face_frame_list = avgerate_frame_per_seg(cap, display_bool=display_bool)    
+                # Release the video capture object and close the video file
+                cap.release()
+            participant_trial_seg = np.stack(face_frame_list, axis=0)
+            
+            np.save(os.path.join(data_save_folder, file_name), participant_trial_seg)
+
+
 def load_participant_data(data_folder, participant_id, trial_id, task='bi_class', load_video=True):
     '''
     input:
