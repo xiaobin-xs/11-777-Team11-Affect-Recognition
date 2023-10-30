@@ -1,9 +1,9 @@
 import torch
 import argparse
-from src.utils import *
+from prakarsh.Husformer.src.utils import *
 from torch.utils.data import DataLoader
-from src import train
-from src import test
+from prakarsh.Husformer.src.modality_3 import train
+from prakarsh.Husformer.src.modality_3 import test
  
 parser = argparse.ArgumentParser(description='Husformer Sentiment Analysis')
 parser.add_argument('-f', default='', type=str)
@@ -13,10 +13,10 @@ parser.add_argument('--model', type=str, default='Husformer',
 # Tasks
 parser.add_argument('--dataset', type=str, default='Husformer',
                     help='dataset to use (default: Husformer)')
-parser.add_argument('--data_path', type=str, default='data',
+parser.add_argument('--data_path', type=str, default='prakarsh/Husformer/data',
                     help='path for storing the dataset')
 # Dropouts
-parser.add_argument('--attn_dropout', type=float, default=0.05,
+parser.add_argument('--attn_dropout', type=float, default=0.1,
                     help='attention dropout')
 parser.add_argument('--relu_dropout', type=float, default=0.1,
                     help='relu dropout')
@@ -24,7 +24,7 @@ parser.add_argument('--embed_dropout', type=float, default=0.1,
                     help='embedding dropout')
 parser.add_argument('--res_dropout', type=float, default=0.1,
                     help='residual block dropout')
-parser.add_argument('--out_dropout', type=float, default=0.0,
+parser.add_argument('--out_dropout', type=float, default=0.1,
                     help='output layer dropout')
 # Architecture
 parser.add_argument('--nlevels', type=int, default=5,
@@ -38,9 +38,9 @@ parser.add_argument('--batch_size', type=int, default=1024, metavar='N',
                     help='batch size (default: 1024)')
 parser.add_argument('--clip', type=float, default=0.8,
                     help='gradient clip value (default: 0.8)')
-parser.add_argument('--lr', type=float, default=1e-3,
+parser.add_argument('--lr', type=float, default=2e-3,
                     help='initial learning rate (default: 1e-3)')
-parser.add_argument('--optim', type=str, default='Adam',
+parser.add_argument('--optim', type=str, default='SGD',
                     help='optimizer to use (default: Adam)')
 parser.add_argument('--num_epochs', type=int, default=40,
                     help='number of epochs (default: 40)')
@@ -68,7 +68,7 @@ use_cuda = False
 output_dim_dict = {
     'Husformer': 1
 }
-
+args.eval = True
 
 torch.set_default_tensor_type('torch.FloatTensor')
 if torch.cuda.is_available():
@@ -85,9 +85,9 @@ train_data = get_data(args, dataset, 'train')
 valid_data = get_data(args, dataset, 'valid')
 test_data = get_data(args, dataset, 'test')
    
-train_loader = DataLoader(train_data, batch_size=args.batch_size, shuffle=True)
-valid_loader = DataLoader(valid_data, batch_size=args.batch_size, shuffle=True)
-test_loader = DataLoader(test_data, batch_size=args.batch_size, shuffle=True)
+train_loader = DataLoader(train_data, batch_size=args.batch_size, shuffle=True, generator=torch.Generator(device='cuda'))
+valid_loader = DataLoader(valid_data, batch_size=args.batch_size, shuffle=True, generator=torch.Generator(device='cuda'))
+test_loader = DataLoader(test_data, batch_size=args.batch_size, shuffle=True, generator=torch.Generator(device='cuda'))
 
 print('Finish loading the data....')
 

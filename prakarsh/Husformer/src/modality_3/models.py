@@ -1,7 +1,7 @@
 import torch
 from torch import nn
 import torch.nn.functional as F
-from modules.transformer import TransformerEncoder
+from prakarsh.Husformer.modules.transformer import TransformerEncoder
 
 class HUSFORMERModel(nn.Module):
     def __init__(self, hyp_params):

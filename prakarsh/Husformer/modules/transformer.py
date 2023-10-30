@@ -1,8 +1,8 @@
 import torch
 from torch import nn
 import torch.nn.functional as F
-from modules.position_embedding import SinusoidalPositionalEmbedding
-from modules.multihead_attention import MultiheadAttention
+from prakarsh.Husformer.modules.position_embedding import SinusoidalPositionalEmbedding
+from prakarsh.Husformer.modules.multihead_attention import MultiheadAttention
 import math
 
 

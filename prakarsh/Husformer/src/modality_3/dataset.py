@@ -17,9 +17,9 @@ class Multimodal_Datasets(Dataset):
         dataset = pickle.load(open(dataset_path, 'rb'))
 
         # These are torch tensors
-        self.m1 = torch.tensor(dataset[split_type]['modality_1'].astype(np.float32)).cpu().detach()
-        self.m2 = torch.tensor(dataset[split_type]['modality_2'].astype(np.float32)).cpu().detach()
-        self.m3 = torch.tensor(dataset[split_type]['modality_3'].astype(np.float32)).cpu().detach()
+        self.m1 = torch.tensor(dataset[split_type]['modality1'].astype(np.float32)).cpu().detach()
+        self.m2 = torch.tensor(dataset[split_type]['modality2'].astype(np.float32)).cpu().detach()
+        self.m3 = torch.tensor(dataset[split_type]['modality3'].astype(np.float32)).cpu().detach()
         self.labels = torch.tensor(dataset[split_type]['label'].astype(np.float32)).cpu().detach()
         self.meta = dataset[split_type]['id']
 

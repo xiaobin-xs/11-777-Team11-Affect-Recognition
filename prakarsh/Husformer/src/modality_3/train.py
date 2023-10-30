@@ -1,8 +1,8 @@
 import torch
 from torch import nn
 import sys
-from src import models
-from src.utils import *
+from prakarsh.Husformer.src.modality_3 import models
+from prakarsh.Husformer.src.utils import *
 import torch.optim as optim
 import numpy as np
 import time
@@ -13,7 +13,7 @@ from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import precision_recall_fscore_support
 from sklearn.metrics import accuracy_score, f1_score
-from src.eval_metrics import *
+from prakarsh.Husformer.src.eval_metrics import *
 
 
 def initiate(hyp_params, train_loader, valid_loader, test_loader):
@@ -23,7 +23,7 @@ def initiate(hyp_params, train_loader, valid_loader, test_loader):
         model = model.cuda()
 
     optimizer = getattr(optim, hyp_params.optim)(model.parameters(), lr=hyp_params.lr)
-    criterion = focalloss()
+    criterion = nn.MSELoss()
     scheduler = ReduceLROnPlateau(optimizer, mode='min', patience=hyp_params.when, factor=0.1, verbose=True)
     settings = {'model': model,
                 'optimizer': optimizer,
@@ -87,14 +87,14 @@ def train_model(settings, hyp_params, train_loader, valid_loader, test_loader):
             proc_loss += raw_loss.item() * batch_size
             proc_size += batch_size
             epoch_loss += combined_loss.item() * batch_size
-            if i_batch % hyp_params.log_interval == 0 and i_batch > 0:
-                avg_loss = proc_loss / proc_size
-                elapsed_time = time.time() - start_time
-                memory_used = torch.cuda.max_memory_allocated() / (1024.0 * 1024.0)
-                print('Epoch {:2d} | Batch {:3d}/{:3d} | Time/Batch(ms) {:5.2f} | Train Loss {:5.4f} | memory_used {:5.4f} MB'.
-                      format(epoch, i_batch, num_batches, elapsed_time * 1000 / hyp_params.log_interval, avg_loss,memory_used))
-                proc_loss, proc_size = 0, 0
-                start_time = time.time()
+            # if i_batch % hyp_params.log_interval == 0 and i_batch > 0:
+            #     avg_loss = proc_loss / proc_size
+            #     elapsed_time = time.time() - start_time
+            #     memory_used = torch.cuda.max_memory_allocated() / (1024.0 * 1024.0)
+            #     print('Epoch {:2d} | Batch {:3d}/{:3d} | Time/Batch(ms) {:5.2f} | Train Loss {:5.4f} | memory_used {:5.4f} MB'.
+            #           format(epoch, i_batch, num_batches, elapsed_time * 1000 / hyp_params.log_interval, avg_loss,memory_used))
+            #     proc_loss, proc_size = 0, 0
+            #     start_time = time.time()
                 
         mae_train = mae_train2 / num_batches
         print('mae_train:',mae_train)
@@ -151,7 +151,7 @@ def train_model(settings, hyp_params, train_loader, valid_loader, test_loader):
         print('Epoch {:2d} | Time {:5.4f} sec | Valid Loss {:5.4f} | MAE-valid{:5.4f} | Test Loss {:5.4f} | MAE-test{:5.4f} | memory_used{:5.4f} MB'.format(epoch, duration, val_loss, mae_valid,test_loss,mae_test,memory_used))
         print("-"*50)
         n_parameters = sum(p.numel() for p in model.parameters())
-        print('n_parameters:',n_parameters)
+        # print('n_parameters:',n_parameters)
         if val_loss < best_valid:
             print(f"Saved model at output/{hyp_params.name}.pt!")
             save_model(hyp_params, model, name=hyp_params.name)

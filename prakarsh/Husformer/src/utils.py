@@ -1,6 +1,6 @@
 import torch
 import os
-from src.dataset import Multimodal_Datasets
+from prakarsh.Husformer.src.modality_3.dataset import Multimodal_Datasets
 
 
 def get_data(args, dataset, split='train'):
@@ -33,19 +33,19 @@ def load_model(args, name=''):
     return model
 
 
-class focalloss(nn.Module):
-    def __init__(self, alpha=[0.1, 0.1, 0.8], gamma=3, reduction='mean'):
+class focalloss(torch.nn.Module):
+    def __init__(self, alpha=[0.15,0.05,0.8], gamma=3, reduction='mean'):
         super(focalloss, self).__init__()
         self.alpha = torch.tensor(alpha)
         self.gamma = gamma
         self.reduction = reduction
 
     def forward(self, pred, target):
-        target = remake_label(target).type(torch.int64)
+        target = target.type(torch.int64)
         alpha = self.alpha[target]
-        log_softmax = torch.log_softmax(pred, dim=1)
-        logpt = torch.gather(log_softmax, dim=1, index=target.view(-1, 1))
-        logpt = logpt.view(-1)
+        log_softmax = torch.log_softmax(pred, dim=0)
+        # logpt = torch.gather(log_softmax, dim=1, index=target.view(-1, 1))
+        logpt = log_softmax.view(-1)
         ce_loss = -logpt 
         pt = torch.exp(logpt)
         focal_loss = alpha * ((1 - pt) ** self.gamma * ce_loss).t()
