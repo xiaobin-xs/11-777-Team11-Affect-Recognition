@@ -27,8 +27,7 @@ for participant_id in participant_ids[:16]:
 
       for trial_id in range(1, trials_len):
           trial_id_mod = '0' + str(trial_id) if trial_id < 10 else str(trial_id)
-          #participant_id_mod = '0' + str(participant_id) if participant_id < 10 else str(participant_id)
-
+          
           labels = load_participant_data(data_folder, participant_id, trial_id_mod)['labels']
           #participant_id = '0' + str(participant_id) if participant_id < 10 else str(participant_id)
           url = '{0}/s{1}_trial{2}.pkl'.format(data_folder + '/Video_embeddings', participant_id, trial_id_mod)
