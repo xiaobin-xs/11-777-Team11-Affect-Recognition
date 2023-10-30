@@ -97,7 +97,7 @@ def avgerate_frame_per_seg(cap, seg=4, display_bool=False):
     return frame_rgb_list
 
 
-def segment_video_data(data_folder, participant_ids, data_save_folder='./data', display_bool=False):
+def segment_video_data(data_folder, participant_ids, data_save_folder='./data_face_seg_mean', display_bool=False):
     '''
     For each of the non-overlapping 4-second facial video segments, average the frames in the segment
     to get a single frame (i.e. an image of face) for the segment
@@ -120,9 +120,9 @@ def segment_video_data(data_folder, participant_ids, data_save_folder='./data', 
                 face_frame_list = avgerate_frame_per_seg(cap, display_bool=display_bool)    
                 # Release the video capture object and close the video file
                 cap.release()
-            participant_trial_seg = np.stack(face_frame_list, axis=0)
-            
-            np.save(os.path.join(data_save_folder, file_name), participant_trial_seg)
+                participant_trial_seg = np.stack(face_frame_list, axis=0)
+                
+                np.save(os.path.join(data_save_folder, file_name), participant_trial_seg)
 
 
 def load_participant_data(data_folder, participant_id, trial_id, task='bi_class', load_video=True):

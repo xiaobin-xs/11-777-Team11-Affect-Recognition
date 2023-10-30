@@ -1,3 +1,11 @@
 AMIGOS/
 DEAP/
 __pycache__/
+data_eeg_DEAP_V/
+save/
+MLP/save/
+LGG/save/
+*.hdf
+*.pth
+traLog*
+.DS_Store
