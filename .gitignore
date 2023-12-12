@@ -1,2 +1,13 @@
 AMIGOS/
 DEAP/
+*png
+*avi
+*pkl
+*zip
+__pycache__/
+*.py[cod]
+*$py.class
+output/hus.pt
+prakarsh/Husformer/data/husformer_test.dt
+prakarsh/Husformer/data/husformer_valid.dt
+prakarsh/Husformer/data/husformer_train.dt
