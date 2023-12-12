@@ -4,7 +4,7 @@ from prakarsh.Husformer.src.utils import *
 from torch.utils.data import DataLoader
 from prakarsh.Husformer.src.modality_3 import train
 from prakarsh.Husformer.src.modality_3 import test
- 
+import prakarsh.Husformer.src.modality_3.models
 parser = argparse.ArgumentParser(description='Husformer Sentiment Analysis')
 parser.add_argument('-f', default='', type=str)
 # Fixed
@@ -104,6 +104,11 @@ hyp_params.model = str.upper(args.model.strip())
 hyp_params.output_dim = output_dim_dict.get(dataset, 1)
 
 if __name__ == '__main__':
+    KD_model = prakarsh.Husformer.src.modality_3.models.MLP
+    KD_model = prakarsh.Husformer.src.modality_3.models.shared_attn
+    KD_model = prakarsh.Husformer.src.modality_3.models.red_param
+    if args.KD:
+        KD = test.KD_train(hyp_params, test_loader, KD_model)
     if args.eval:
         test = test.eval(hyp_params, test_loader)
     else:
